@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Weather</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <script>
+        function updateTemperatureUnit() {
+            const form = document.getElementById('weather-form');
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.body.innerHTML = html;  
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <section class="hero is-primary">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    Should I bring sunscreen or an umbrella for this episode?
+                </h1>
+            </div>
+        </div>
+    </section>
+    <section class="section">
+        <div class="container">
+            <form id="weather-form" method="POST" action="{% url 'home' %}">
+                {% csrf_token %}
+                <div class="field">
+                    <label class="label">Temperature Unit</label>
+                    <div class="control">
+                        <label class="radio">
+                            <input type="radio" name="temperature_unit" value="metric" {% if temperature_unit == 'metric' %} checked {% endif %} onchange="updateTemperatureUnit()">
+                            Celsius
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="temperature_unit" value="imperial" {% if temperature_unit == 'imperial' %} checked {% endif %} onchange="updateTemperatureUnit()">
+                            Fahrenheit
+                        </label>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-offset-4 is-4">
+                        <div class="field has-addons">
+                            <div class="control is-expanded">
+                                {{ form.name }}
+                            </div>
+                            <div class="control">
+                                <button type="submit" class="button is-info">
+                                    Add City
+                                </button>
+                            </div>
+                        </div>
+                        {% if message %}
+                            <div class="notification {{ message_class }}">{{ message }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-offset-4 is-4">
+                   {% for city_weather in weather_data %} 
+                    <div class="box">
+                        <article class="media">
+                            <div class="media-left">
+                                <figure class="image is-50x50">
+                                    <img src="http://openweathermap.org/img/w/{{ city_weather.icon }}.png" alt="Weather Icon">
+                                </figure>
+                            </div>
+                            <div class="media-content">
+                                <div class="content">
+                                    <p>
+                                        <span class="title">{{ city_weather.city }}</span>
+                                        <br>
+                                        <span class="subtitle">
+                                            {{ city_weather.temperature }}° 
+                                            {% if temperature_unit == 'metric' %}
+                                                C
+                                            {% else %}
+                                                F
+                                            {% endif %}
+                                        </span>
+                                        <br><strong>Comment:</strong> {{ city_weather.comment }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="media-right">
+                                <a href="{% url 'delete_city' city_weather.city %}">
+                                   <button class="delete"></button>
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="footer"></footer>
+</body>
+
+</html>
