@@ -1,7 +1,5 @@
 # Weather_demo
 
-# Weather Web Application
-
 ## Overview
 
 This is a weather web application built with Django that allows users to check the current weather conditions for various cities around the world. 
